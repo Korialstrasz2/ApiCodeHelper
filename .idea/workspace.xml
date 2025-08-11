@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2589765-dc7a-4d52-80c2-ab567fc801ae" name="Changes" comment="n2">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/welcome/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/welcome/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/welcome/programming_helper_chatbot.py" beforeDir="false" afterPath="$PROJECT_DIR$/welcome/programming_helper_chatbot.py" afterDir="false" />
-    </list>
+    <list default="true" id="f2589765-dc7a-4d52-80c2-ab567fc801ae" name="Changes" comment="n2" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -112,7 +107,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754932819961</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="n2">
+      <option name="closed" value="true" />
+      <created>1754940171948</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1754940171948</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
