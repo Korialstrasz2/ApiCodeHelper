@@ -393,4 +393,15 @@ def programming_helper_send_message(request):  # noqa: C901
     return JsonResponse({
         "response": reply,
         "conversations": full_state,
+        "debug_prompt": {
+            "system": combined_system,
+            "messages": _build_messages(history, combined_system),
+            "flat_prompt": prompt_for_ollama
+        },
+        "persona_debug": {
+            "nome": persona_obj.nome,
+            "versione": persona_obj.versione,
+            "contenuto": persona_obj.contenuto,
+            "esperienze": persona_obj.esperienze,
+        }
     })
