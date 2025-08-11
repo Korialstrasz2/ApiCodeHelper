@@ -31,8 +31,8 @@ log = logging.getLogger("custom")
 # Default persona id used when none is specified
 PROGRAMMING_HELPER_PERSONA_ID = -42042
 
-CONTEXT_STANDARD = 250
-CONTEXT_ASSISTANT = 1000
+CONTEXT_STANDARD = 2500
+CONTEXT_ASSISTANT = 10000
 
 # Ollama
 OLLAMA_QWEN_BASE = "qwen3:8b"
