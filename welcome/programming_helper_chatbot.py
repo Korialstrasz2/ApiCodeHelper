@@ -262,14 +262,16 @@ def programming_helper_send_message(request):  # noqa: C901
     if local == "ollama":
         if requests is None:
             return JsonResponse({"error": "requests library not installed"}, status=500)
+        model = OLLAMA_QWEN_14
         payload = {
-            "model": OLLAMA_QWEN_14,
+            "model": model,
             "prompt": prompt_for_ollama,
             "system": combined_system,
             "stream": False,
             "think": False,
             "hidethinking": True,
         }
+        print(f"Model in use: {model}")
         try:
             resp = requests.post("http://localhost:11434/api/generate", json=payload, timeout=45)
             resp.raise_for_status()
@@ -289,6 +291,7 @@ def programming_helper_send_message(request):  # noqa: C901
             else MISTRAL_MODEL_L if mode == "large"
             else MISTRAL_MODEL_R
         )
+        print(f"Model in use: {model}")
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -325,6 +328,7 @@ def programming_helper_send_message(request):  # noqa: C901
         else:
             model_name = OPENAI_MODEL_L
             reasoning = None
+        print(f"Model in use: {model_name}")
         try:
             resp = client.responses.create(
                 model=model_name,
@@ -351,6 +355,7 @@ def programming_helper_send_message(request):  # noqa: C901
             model_name = OPENROUTER_MODEL_M
         else:
             model_name = OPENROUTER_MODEL_L
+        print(f"Model in use: {model_name}")
 
         body = {
             "model": model_name,
