@@ -9,6 +9,10 @@ def index(request):
     return render(request, 'welcome/index.html')
 
 
+def chat_persona(request):
+    return render(request, 'welcome/chat.html')
+
+
 @csrf_exempt
 def check_user(request):
     data = json.loads(request.body.decode('utf-8'))
