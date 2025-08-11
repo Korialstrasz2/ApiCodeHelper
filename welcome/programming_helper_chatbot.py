@@ -95,6 +95,9 @@ Be pragmatic, precise, and *useful*. Favor actionable fixes over theory.
 - Don’t hallucinate APIs or versions; call them out as *assumptions* if uncertain.
 """.strip()
 
+RP_SYSTEM_PROMPT = """
+Sei un personaggio in un universo di fantasia.
+""".strip()
 
 # ——— Helpers ———
 def _build_messages(history: Deque[Tuple[str, str]], system_prompt: str) -> List[Dict[str, str]]:
@@ -166,6 +169,7 @@ def programming_helper_send_message(request):  # noqa: C901
       "message": "string",                 # required
       "local": "openai|mistral|openrouter|ollama",   # default "ollama"
       "size": "s|m|l|r",                 # default "m" (Small/Medium/Large/Reasoning)
+      "rp": true,                         # optional, abilita Role Play
       "verbosity": "low|medium|high",      # default "medium" (OpenAI only)
       "lang": "auto|it|en",                # default "auto"
       "character": "string",               # optional, groups conversations; default "developer"
@@ -199,6 +203,7 @@ def programming_helper_send_message(request):  # noqa: C901
     local = (data.get("local") or "ollama").strip().lower()
     size = (data.get("size") or "m").strip().lower()
     verbosity = (data.get("verbosity") or DEFAULT_VERBOSITY).lower()
+    rp = bool(data.get("rp", False))
     if verbosity not in VERBOSITY_VALUES:
         verbosity = DEFAULT_VERBOSITY
 
@@ -253,8 +258,8 @@ def programming_helper_send_message(request):  # noqa: C901
             system_base = f"{system_base}\n\nEsperienze:\n{persona_obj.esperienze}"
     else:
         system_base = PROGRAMMING_HELPER_SYSTEM
-    combined_system = f"{system_base}\n\n{lang_rule}\n\n{code_block}".strip()
-
+    rp_block = (RP_SYSTEM_PROMPT + "\n\n") if rp else ""
+    combined_system = f"{rp_block}{system_base}\n\n{lang_rule}\n\n{code_block}".strip()
     # Provider calls
     context_limit = CONTEXT_ASSISTANT
     reply: str = ""

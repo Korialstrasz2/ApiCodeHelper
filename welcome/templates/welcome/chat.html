@@ -16,6 +16,9 @@
         <label for="persona-select">Persona:</label>
         <select id="persona-select"></select>
     </div>
+    <div>
+        <label><input type="checkbox" id="rp-checkbox" />RP</label>
+    </div>
     <div id="persona-error" style="color: red;"></div>
     <div>
         <label for="api-select">API:</label>
@@ -23,7 +26,7 @@
             <option value="ollama">Ollama</option>
             <option value="mistral">Mistral</option>
             <option value="openai">OpenAI</option>
-            <option value="openrouter">OpenRouter</option>
+            <option value="openrouter" selected>OpenRouter</option>
         </select>
     </div>
     <div>
@@ -79,11 +82,12 @@
         const personaId = document.getElementById('persona-select').value;
         const api = document.getElementById('api-select').value;
         const size = document.getElementById('size-select').value;
+        const rp = document.getElementById('rp-checkbox').checked;
         if (!msg) return;
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML += `<div class="user">Tu: ${msg}</div>`;
         document.getElementById('message-input').value = '';
-        const payload = { message: msg, local: api, size: size, persona_id: personaId };
+        const payload = { message: msg, local: api, size: size, persona_id: personaId, rp: rp };
         const res = await fetch('/api/programming_helper/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
