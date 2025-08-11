@@ -6,7 +6,10 @@ import threading
 from typing import Deque, Dict, List, Tuple, Union
 from django.http import JsonResponse
 
-from the_elder_django.log_config import get_log_types  # noqa: F401 – side‑effects
+try:
+    from the_elder_django.log_config import get_log_types  # noqa: F401 – side‑effects
+except Exception:  # pragma: no cover - optional dependency
+    pass
 from .GLOBALS_AND_WORKING import LOCK, CONVERSATIONS
 from .models import Persona
 
@@ -38,11 +41,11 @@ def personas_list(request):
         qs = qs.filter(ristretto=False)
     data = [
         {
+            "id": p.pk,
             "nome": p.nome,
             "versione": p.versione,
-            "categoria": p.categoria,
         }
-        for p in qs.order_by("categoria", "nome")
+        for p in qs.order_by("nome")
     ]
     return JsonResponse({"personas": data})
 

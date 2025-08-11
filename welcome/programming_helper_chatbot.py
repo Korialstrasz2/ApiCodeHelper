@@ -8,18 +8,27 @@ import re
 from collections import deque
 from typing import Deque, Dict, List, Tuple, Union
 
-import requests
+try:
+    import requests
+except ModuleNotFoundError:  # pragma: no cover - environment without requests
+    requests = None
+
 from django.http import JsonResponse
-from openai import OpenAI
+from django.views.decorators.csrf import csrf_exempt
+try:
+    from openai import OpenAI
+except ModuleNotFoundError:  # pragma: no cover - environment without openai
+    OpenAI = None
 
 # Reuse your shared state & utils exactly like your current endpoint
 from .GLOBALS_AND_WORKING import LOCK, CONVERSATIONS
 from .chatbot_utils import _conversation_key, _conversation_dump
+from .models import Persona
 
 log = logging.getLogger("custom")
 
 # ——— Config & Models ———
-# (No DB Persona dependency; we use a fixed pseudo-persona id)
+# Default persona id used when none is specified
 PROGRAMMING_HELPER_PERSONA_ID = -42042
 
 CONTEXT_STANDARD = 250
@@ -149,6 +158,7 @@ def _language_directive(lang: str | None) -> str:
 
 
 # ——— Main endpoint ———
+@csrf_exempt
 def programming_helper_send_message(request):  # noqa: C901
     """
     POST JSON body:
@@ -160,6 +170,7 @@ def programming_helper_send_message(request):  # noqa: C901
       "lang": "auto|it|en",                # default "auto"
       "character": "string",               # optional, groups conversations; default "developer"
       "topic": "string",                   # optional, additional conversation partition key
+      "persona_id": 123,                    # optional, chat persona id
       "snippets": [                        # optional code/context
         {"filename":"app.py","language":"python","content":"..."},
         {"filename":"index.tsx","language":"typescript","content":"..."}
@@ -198,10 +209,18 @@ def programming_helper_send_message(request):  # noqa: C901
     snippets = data.get("snippets") or []
     project_context = data.get("project_context") or ""
 
+    persona_obj = None
+    try:
+        persona_id = int(data.get("persona_id", PROGRAMMING_HELPER_PERSONA_ID))
+        if persona_id != PROGRAMMING_HELPER_PERSONA_ID:
+            persona_obj = Persona.objects.get(pk=persona_id)
+    except (ValueError, Persona.DoesNotExist):
+        persona_id = PROGRAMMING_HELPER_PERSONA_ID
+        persona_obj = None
+
     # Conversation management (mirror your style)
     # Use your shared key function with a stable pseudo persona id + optional topic
-    persona_id = PROGRAMMING_HELPER_PERSONA_ID
-    if topic:
+    if topic and not persona_obj:
         # fold topic into the id space in a stable way
         persona_key_fragment = abs(hash(("ph", topic))) % (10**6)
         persona_id = - (100000 + persona_key_fragment)
@@ -228,13 +247,21 @@ def programming_helper_send_message(request):  # noqa: C901
     # Build system content (base + language directive + optional code context)
     lang_rule = _language_directive(lang)
     code_block = _assemble_code_context(snippets, project_context)
-    combined_system = f"{PROGRAMMING_HELPER_SYSTEM}\n\n{lang_rule}\n\n{code_block}".strip()
+    if persona_obj:
+        system_base = persona_obj.contenuto
+        if persona_obj.esperienze:
+            system_base = f"{system_base}\n\nEsperienze:\n{persona_obj.esperienze}"
+    else:
+        system_base = PROGRAMMING_HELPER_SYSTEM
+    combined_system = f"{system_base}\n\n{lang_rule}\n\n{code_block}".strip()
 
     # Provider calls
     context_limit = CONTEXT_ASSISTANT
     reply: str = ""
 
     if local == "ollama":
+        if requests is None:
+            return JsonResponse({"error": "requests library not installed"}, status=500)
         payload = {
             "model": OLLAMA_QWEN_14,
             "prompt": prompt_for_ollama,
@@ -251,6 +278,8 @@ def programming_helper_send_message(request):  # noqa: C901
             return JsonResponse({"error": f"Ollama call failed: {exc}"}, status=500)
 
     elif local == "mistral":
+        if requests is None:
+            return JsonResponse({"error": "requests library not installed"}, status=500)
         api_key = os.getenv("MISTRAL_API_KEY")
         if not api_key:
             return JsonResponse({"error": "MISTRAL_API_KEY not set"}, status=500)
@@ -280,6 +309,8 @@ def programming_helper_send_message(request):  # noqa: C901
             return JsonResponse({"error": f"Mistral API call failed: {exc}"}, status=500)
 
     elif local == "openai":
+        if OpenAI is None:
+            return JsonResponse({"error": "openai library not installed"}, status=500)
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
             return JsonResponse({"error": "OpenAI API key is empty"}, status=500)
@@ -307,6 +338,8 @@ def programming_helper_send_message(request):  # noqa: C901
             return JsonResponse({"error": f"OpenAI API call failed: {exc}"}, status=500)
 
     elif local == "openrouter":
+        if requests is None:
+            return JsonResponse({"error": "requests library not installed"}, status=500)
         api_key = os.getenv("OPENROUTER_API_KEY")
         if not api_key:
             return JsonResponse({"error": "OPENROUTER_API_KEY not set"}, status=500)

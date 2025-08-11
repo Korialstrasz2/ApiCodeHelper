@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Persona Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #chat-box { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-top: 10px; }
+        .user { color: blue; }
+        .assistant { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Persona Chat</h1>
+    <div>
+        <label for="persona-select">Persona:</label>
+        <select id="persona-select"></select>
+    </div>
+    <div>
+        <label for="api-select">API:</label>
+        <select id="api-select">
+            <option value="ollama">Ollama</option>
+            <option value="mistral">Mistral</option>
+            <option value="openai">OpenAI</option>
+            <option value="openrouter">OpenRouter</option>
+        </select>
+    </div>
+    <div id="chat-box"></div>
+    <input type="text" id="message-input" placeholder="Scrivi un messaggio" />
+    <button id="send-btn">Invia</button>
+
+    <script>
+    async function loadPersonas() {
+        const res = await fetch('/api/personas/');
+        const data = await res.json();
+        const select = document.getElementById('persona-select');
+        data.personas.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.nome + ' v' + p.versione;
+            select.appendChild(opt);
+        });
+    }
+
+    async function sendMessage() {
+        const msg = document.getElementById('message-input').value;
+        const personaId = document.getElementById('persona-select').value;
+        const api = document.getElementById('api-select').value;
+        if (!msg) return;
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML += `<div class="user">Tu: ${msg}</div>`;
+        document.getElementById('message-input').value = '';
+        const res = await fetch('/api/programming_helper/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg, local: api, persona_id: personaId })
+        });
+        const data = await res.json();
+        if (data.response) {
+            chatBox.innerHTML += `<div class="assistant">Bot: ${data.response}</div>`;
+        } else if (data.error) {
+            chatBox.innerHTML += `<div class="assistant">Errore: ${data.error}</div>`;
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    document.getElementById('send-btn').addEventListener('click', sendMessage);
+    loadPersonas();
+    </script>
+</body>
+</html>
