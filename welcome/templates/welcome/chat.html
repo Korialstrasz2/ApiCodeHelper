@@ -26,6 +26,15 @@
             <option value="openrouter">OpenRouter</option>
         </select>
     </div>
+    <div>
+        <label for="size-select">Size:</label>
+        <select id="size-select">
+            <option value="s">S</option>
+            <option value="m" selected>M</option>
+            <option value="l">L</option>
+            <option value="r">R</option>
+        </select>
+    </div>
     <div id="chat-box"></div>
     <textarea id="message-input" placeholder="Scrivi un messaggio"></textarea>
     <button id="send-btn">Invia</button>
@@ -64,11 +73,12 @@
         const msg = document.getElementById('message-input').value;
         const personaId = document.getElementById('persona-select').value;
         const api = document.getElementById('api-select').value;
+        const size = document.getElementById('size-select').value;
         if (!msg) return;
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML += `<div class="user">Tu: ${msg}</div>`;
         document.getElementById('message-input').value = '';
-        const payload = { message: msg, local: api, persona_id: personaId };
+        const payload = { message: msg, local: api, size: size, persona_id: personaId };
         const res = await fetch('/api/programming_helper/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

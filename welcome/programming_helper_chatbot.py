@@ -165,7 +165,7 @@ def programming_helper_send_message(request):  # noqa: C901
     {
       "message": "string",                 # required
       "local": "openai|mistral|openrouter|ollama",   # default "ollama"
-      "mode": "normale|large|reasoning",   # default "normale"
+      "size": "s|m|l|r",                 # default "m" (Small/Medium/Large/Reasoning)
       "verbosity": "low|medium|high",      # default "medium" (OpenAI only)
       "lang": "auto|it|en",                # default "auto"
       "character": "string",               # optional, groups conversations; default "developer"
@@ -197,7 +197,7 @@ def programming_helper_send_message(request):  # noqa: C901
         return JsonResponse({"error": "Message required."}, status=400)
 
     local = (data.get("local") or "ollama").strip().lower()
-    mode = (data.get("mode") or "normale").strip().lower()
+    size = (data.get("size") or "m").strip().lower()
     verbosity = (data.get("verbosity") or DEFAULT_VERBOSITY).lower()
     if verbosity not in VERBOSITY_VALUES:
         verbosity = DEFAULT_VERBOSITY
@@ -262,7 +262,12 @@ def programming_helper_send_message(request):  # noqa: C901
     if local == "ollama":
         if requests is None:
             return JsonResponse({"error": "requests library not installed"}, status=500)
-        model = OLLAMA_QWEN_14
+        model = {
+            "s": OLLAMA_QWEN_BASE,
+            "m": OLLAMA_MISTRAL,
+            "l": OLLAMA_QWEN_14,
+            "r": OLLAMA_QWEN_14,
+        }.get(size, OLLAMA_QWEN_14)
         payload = {
             "model": model,
             "prompt": prompt_for_ollama,
@@ -286,11 +291,12 @@ def programming_helper_send_message(request):  # noqa: C901
         if not api_key:
             return JsonResponse({"error": "MISTRAL_API_KEY not set"}, status=500)
         messages = _build_messages(history, combined_system)
-        model = (
-            MISTRAL_MODEL_M if mode == "normale"
-            else MISTRAL_MODEL_L if mode == "large"
-            else MISTRAL_MODEL_R
-        )
+        model = {
+            "s": MISTRAL_MODEL_S,
+            "m": MISTRAL_MODEL_M,
+            "l": MISTRAL_MODEL_L,
+            "r": MISTRAL_MODEL_R,
+        }.get(size, MISTRAL_MODEL_M)
         print(f"Model in use: {model}")
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -319,15 +325,13 @@ def programming_helper_send_message(request):  # noqa: C901
             return JsonResponse({"error": "OpenAI API key is empty"}, status=500)
         client = OpenAI(api_key=api_key)
         messages = _build_messages(history, combined_system)
-        if mode == "large":
-            model_name = OPENAI_MODEL_R
-            reasoning = {"effort": "high"}
-        elif mode == "normale":
-            model_name = OPENAI_MODEL_S
-            reasoning = {"effort": "minimal"}
-        else:
-            model_name = OPENAI_MODEL_L
-            reasoning = None
+        model_name = {
+            "s": OPENAI_MODEL_S,
+            "m": OPENAI_MODEL_L,
+            "l": OPENAI_MODEL_L,
+            "r": OPENAI_MODEL_R,
+        }.get(size, OPENAI_MODEL_L)
+        reasoning = {"effort": "high"} if size == "r" else {"effort": "minimal"} if size == "s" else None
         print(f"Model in use: {model_name}")
         try:
             resp = client.responses.create(
@@ -349,12 +353,12 @@ def programming_helper_send_message(request):  # noqa: C901
             return JsonResponse({"error": "OPENROUTER_API_KEY not set"}, status=500)
 
         messages = _build_messages(history, combined_system)
-        if mode == "normale":
-            model_name = OPENROUTER_MODEL_S
-        elif mode == "large":
-            model_name = OPENROUTER_MODEL_M
-        else:
-            model_name = OPENROUTER_MODEL_L
+        model_name = {
+            "s": OPENROUTER_MODEL_S,
+            "m": OPENROUTER_MODEL_M,
+            "l": OPENROUTER_MODEL_L,
+            "r": OPENROUTER_MODEL_L,
+        }.get(size, OPENROUTER_MODEL_S)
         print(f"Model in use: {model_name}")
 
         body = {
