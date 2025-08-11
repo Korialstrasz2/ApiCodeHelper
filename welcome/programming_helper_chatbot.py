@@ -167,8 +167,8 @@ def programming_helper_send_message(request):  # noqa: C901
     POST JSON body:
     {
       "message": "string",                 # required
-      "local": "openai|mistral|openrouter|ollama",   # default "ollama"
-      "size": "s|m|l|r",                 # default "m" (Small/Medium/Large/Reasoning)
+      "local": "openai|mistral|openrouter|ollama",   # default "ollama" (RP defaults to "openrouter")
+      "size": "s|m|l|r",                 # default "m" (RP defaults to "l")
       "rp": true,                         # optional, abilita Role Play
       "verbosity": "low|medium|high",      # default "medium" (OpenAI only)
       "lang": "auto|it|en",                # default "auto"
@@ -200,10 +200,21 @@ def programming_helper_send_message(request):  # noqa: C901
     if not message:
         return JsonResponse({"error": "Message required."}, status=400)
 
-    local = (data.get("local") or "ollama").strip().lower()
-    size = (data.get("size") or "m").strip().lower()
-    verbosity = (data.get("verbosity") or DEFAULT_VERBOSITY).lower()
     rp = bool(data.get("rp", False))
+
+    local_raw = data.get("local")
+    if local_raw is None:
+        local = "openrouter" if rp else "ollama"
+    else:
+        local = str(local_raw).strip().lower()
+
+    size_raw = data.get("size")
+    if size_raw is None:
+        size = "l" if rp else "m"
+    else:
+        size = str(size_raw).strip().lower()
+
+    verbosity = (data.get("verbosity") or DEFAULT_VERBOSITY).lower()
     if verbosity not in VERBOSITY_VALUES:
         verbosity = DEFAULT_VERBOSITY
 
@@ -258,7 +269,17 @@ def programming_helper_send_message(request):  # noqa: C901
             system_base = f"{system_base}\n\nEsperienze:\n{persona_obj.esperienze}"
     else:
         system_base = PROGRAMMING_HELPER_SYSTEM
-    rp_block = (RP_SYSTEM_PROMPT + "\n\n") if rp else ""
+    rp_block = ""
+    if rp:
+        rp_prompt = RP_SYSTEM_PROMPT
+        try:
+            rp_persona = Persona.objects.get(nome="RPPrompt")
+            rp_prompt = rp_persona.contenuto
+            if rp_persona.esperienze:
+                rp_prompt = f"{rp_prompt}\n\nEsperienze:\n{rp_persona.esperienze}"
+        except Persona.DoesNotExist:
+            pass
+        rp_block = rp_prompt.strip() + "\n\n"
     combined_system = f"{rp_block}{system_base}\n\n{lang_rule}\n\n{code_block}".strip()
     # Provider calls
     context_limit = CONTEXT_ASSISTANT
