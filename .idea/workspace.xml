@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="f2589765-dc7a-4d52-80c2-ab567fc801ae" name="Changes" comment="n1" />
+    <list default="true" id="f2589765-dc7a-4d52-80c2-ab567fc801ae" name="Changes" comment="n2">
+      <change afterPath="$PROJECT_DIR$/welcome/programming_helper_chatbot.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,7 +47,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/alexo/PycharmProjects/ApiCodeHelper"
+    "last_opened_file_path": "C:/Users/alexo/PycharmProjects/ApiCodeHelper/welcome"
   }
 }]]></component>
   <component name="SharedIndexes">
@@ -67,11 +74,28 @@
       <option name="project" value="LOCAL" />
       <updated>1754930500261</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="n2">
+      <option name="closed" value="true" />
+      <created>1754930764911</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1754930764911</updated>
+    </task>
+    <task id="LOCAL-00003" summary="n2">
+      <option name="closed" value="true" />
+      <created>1754930870371</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1754930870371</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="n1" />
-    <option name="LAST_COMMIT_MESSAGE" value="n1" />
+    <MESSAGE value="n2" />
+    <option name="LAST_COMMIT_MESSAGE" value="n2" />
   </component>
 </project>
