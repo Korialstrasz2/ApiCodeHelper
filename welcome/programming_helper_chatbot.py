@@ -95,9 +95,14 @@ Be pragmatic, precise, and *useful*. Favor actionable fixes over theory.
 - Don’t hallucinate APIs or versions; call them out as *assumptions* if uncertain.
 """.strip()
 
-RP_SYSTEM_PROMPT = """
-Sei un personaggio in un universo di fantasia.
-""".strip()
+RP_PROMPT_PERSONA_NAME = "RPPrompt"
+
+def _rp_system_prompt() -> str:
+    try:
+        persona = Persona.objects.filter(nome=RP_PROMPT_PERSONA_NAME).order_by("-id").first()
+        return persona.contenuto if persona else ""
+    except Exception:
+        return ""
 
 # ——— Helpers ———
 def _build_messages(history: Deque[Tuple[str, str]], system_prompt: str) -> List[Dict[str, str]]:
@@ -258,7 +263,7 @@ def programming_helper_send_message(request):  # noqa: C901
             system_base = f"{system_base}\n\nEsperienze:\n{persona_obj.esperienze}"
     else:
         system_base = PROGRAMMING_HELPER_SYSTEM
-    rp_block = (RP_SYSTEM_PROMPT + "\n\n") if rp else ""
+    rp_block = (_rp_system_prompt() + "\n\n") if rp else ""
     combined_system = f"{rp_block}{system_base}\n\n{lang_rule}\n\n{code_block}".strip()
     # Provider calls
     context_limit = CONTEXT_ASSISTANT

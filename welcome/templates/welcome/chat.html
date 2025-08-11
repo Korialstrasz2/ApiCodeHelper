@@ -118,6 +118,12 @@
             sendMessage();
         }
     });
+    document.getElementById('rp-checkbox').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('api-select').value = 'openrouter';
+            document.getElementById('size-select').value = 'l';
+        }
+    });
     loadPersonas();
     </script>
 </body>
