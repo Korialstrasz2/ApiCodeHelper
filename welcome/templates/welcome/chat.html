@@ -16,6 +16,7 @@
         <label for="persona-select">Persona:</label>
         <select id="persona-select"></select>
     </div>
+    <div id="persona-error" style="color: red;"></div>
     <div>
         <label for="api-select">API:</label>
         <select id="api-select">
@@ -34,12 +35,20 @@
         const res = await fetch('/api/personas/');
         const data = await res.json();
         const select = document.getElementById('persona-select');
+        let coderFound = false;
         data.personas.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p.id;
             opt.textContent = p.nome + ' v' + p.versione;
+            if (p.nome === 'Coder') {
+                opt.selected = true;
+                coderFound = true;
+            }
             select.appendChild(opt);
         });
+        if (!coderFound) {
+            document.getElementById('persona-error').textContent = 'Persona Coder non trovata';
+        }
     }
 
     async function sendMessage() {
