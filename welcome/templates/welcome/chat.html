@@ -27,8 +27,10 @@
         </select>
     </div>
     <div id="chat-box"></div>
-    <input type="text" id="message-input" placeholder="Scrivi un messaggio" />
+    <textarea id="message-input" placeholder="Scrivi un messaggio"></textarea>
     <button id="send-btn">Invia</button>
+    <button id="toggle-api-log">Mostra/Nascondi API Calls</button>
+    <div id="api-log" style="display: none;"></div>
 
     <script>
     async function loadPersonas() {
@@ -51,6 +53,13 @@
         }
     }
 
+    const apiCalls = [];
+
+    function updateApiLog() {
+        const logDiv = document.getElementById('api-log');
+        logDiv.innerHTML = apiCalls.map(call => `<pre>${JSON.stringify(call, null, 2)}</pre>`).join('');
+    }
+
     async function sendMessage() {
         const msg = document.getElementById('message-input').value;
         const personaId = document.getElementById('persona-select').value;
@@ -59,12 +68,16 @@
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML += `<div class="user">Tu: ${msg}</div>`;
         document.getElementById('message-input').value = '';
+        const payload = { message: msg, local: api, persona_id: personaId };
         const res = await fetch('/api/programming_helper/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg, local: api, persona_id: personaId })
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
+        apiCalls.push({ request: payload, response: data });
+        if (apiCalls.length > 2) apiCalls.shift();
+        updateApiLog();
         if (data.response) {
             chatBox.innerHTML += `<div class="assistant">Bot: ${data.response}</div>`;
         } else if (data.error) {
@@ -74,6 +87,18 @@
     }
 
     document.getElementById('send-btn').addEventListener('click', sendMessage);
+    document.getElementById('toggle-api-log').addEventListener('click', () => {
+        const logDiv = document.getElementById('api-log');
+        logDiv.style.display = logDiv.style.display === 'none' ? 'block' : 'none';
+    });
+
+    const messageInput = document.getElementById('message-input');
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
     loadPersonas();
     </script>
 </body>
