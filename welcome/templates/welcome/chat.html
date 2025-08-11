@@ -111,6 +111,13 @@
         logDiv.style.display = logDiv.style.display === 'none' ? 'block' : 'none';
     });
 
+    document.getElementById('rp-checkbox').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('api-select').value = 'openrouter';
+            document.getElementById('size-select').value = 'l';
+        }
+    });
+
     const messageInput = document.getElementById('message-input');
     messageInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
