@@ -19,6 +19,9 @@
     <div>
         <label><input type="checkbox" id="rp-checkbox" />RP</label>
     </div>
+    <div>
+        <label><input type="checkbox" id="english-checkbox" />English</label>
+    </div>
     <div id="persona-error" style="color: red;"></div>
     <div>
         <label for="api-select">API:</label>
@@ -46,9 +49,11 @@
 
     <script>
     async function loadPersonas() {
-        const res = await fetch('/api/personas/');
+        const english = document.getElementById('english-checkbox').checked;
+        const res = await fetch(`/api/personas/?inglese=${english}`);
         const data = await res.json();
         const select = document.getElementById('persona-select');
+        select.innerHTML = '';
         let coderFound = false;
         data.personas.forEach(p => {
             const opt = document.createElement('option');
@@ -60,8 +65,11 @@
             }
             select.appendChild(opt);
         });
+        const errDiv = document.getElementById('persona-error');
         if (!coderFound) {
-            document.getElementById('persona-error').textContent = 'Persona Coder non trovata';
+            errDiv.textContent = 'Persona Coder non trovata';
+        } else {
+            errDiv.textContent = '';
         }
     }
 
@@ -124,6 +132,7 @@
             document.getElementById('size-select').value = 'l';
         }
     });
+    document.getElementById('english-checkbox').addEventListener('change', loadPersonas);
     loadPersonas();
     </script>
 </body>
