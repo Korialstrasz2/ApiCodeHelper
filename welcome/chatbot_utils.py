@@ -36,8 +36,6 @@ def personas_list(request):
     qs = Persona.objects.all()
     if inglese_param is not None:
         qs = qs.filter(inglese=inglese_param.lower() == "true")
-    if not master_mode:
-        qs = qs.filter(ristretto=False)
     data = [
         {
             "id": p.pk,
