@@ -32,7 +32,10 @@ def _conversation_dump(character: str | None) -> Dict[str, List[Dict[str, str]]]
 
 def personas_list(request):
     master_mode = request.GET.get("master") == "true"
+    inglese_param = request.GET.get("inglese")
     qs = Persona.objects.all()
+    if inglese_param is not None:
+        qs = qs.filter(inglese=inglese_param.lower() == "true")
     if not master_mode:
         qs = qs.filter(ristretto=False)
     data = [
