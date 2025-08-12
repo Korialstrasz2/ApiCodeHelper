@@ -247,7 +247,8 @@ def programming_helper_send_message(request):  # noqa: C901
     persona_obj = None
     raw_id = data.get("persona_id")
     persona_name = (data.get("persona_name") or "").strip() or None
-    inglese_flag = data.get("inglese")  # expect true/false
+    inglese_flag = data.get("inglese")
+    print("inglese_flag", inglese_flag)
     try:
         persona_id = int(raw_id) if raw_id is not None else None
     except (TypeError, ValueError):
@@ -256,10 +257,7 @@ def programming_helper_send_message(request):  # noqa: C901
     if persona_id is None:
         persona_id = PROGRAMMING_HELPER_PERSONA_ID
 
-    # Conversation management (mirror your style)
-    # Use your shared key function with a stable pseudo persona id + optional topic
     if topic and not persona_obj:
-        # fold topic into the id space in a stable way
         persona_key_fragment = abs(hash(("ph", topic))) % (10**6)
         persona_id = - (100000 + persona_key_fragment)
 
@@ -288,7 +286,7 @@ def programming_helper_send_message(request):  # noqa: C901
     if persona_obj:
         system_base = persona_obj.contenuto
         if persona_obj.esperienze:
-            system_base = f"{system_base}\n\nEsperienze:\n{persona_obj.esperienze}"
+            system_base = f"{system_base}\n\nUlteriori Esperienze della Persona:\n{persona_obj.esperienze}"
     else:
         system_base = PROGRAMMING_HELPER_SYSTEM
     rp_block = (_rp_system_prompt() + "\n\n") if rp else ""

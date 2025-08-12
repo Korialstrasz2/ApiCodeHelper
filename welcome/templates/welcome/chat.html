@@ -49,29 +49,23 @@
 
     <script>
     async function loadPersonas() {
-        const english = document.getElementById('english-checkbox').checked;
-        const res = await fetch(`/api/personas/?inglese=${english}`);
+        const res = await fetch(`/api/personas/`);
         const data = await res.json();
         const select = document.getElementById('persona-select');
+        const prev = select.value;
         select.innerHTML = '';
-        let coderFound = false;
         data.personas.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p.id;
             opt.dataset.name = p.nome;
             opt.textContent = p.nome + ' v' + p.versione;
-            if (p.nome === 'AI Help') {
+            if ((prev && String(p.id) === prev) || (!prev && p.nome === 'AI Help')) {
                 opt.selected = true;
-                coderFound = true;
             }
             select.appendChild(opt);
         });
         const errDiv = document.getElementById('persona-error');
-        if (!coderFound) {
-            errDiv.textContent = 'Persona Coder non trovata';
-        } else {
-            errDiv.textContent = '';
-        }
+        errDiv.textContent = data.personas.length ? '' : 'Nessuna persona trovata';
     }
 
     const apiCalls = [];
@@ -95,6 +89,7 @@
         const inglese = document.getElementById('english-checkbox').checked;
         if (!msg) return;
         const personaName = sel.selectedOptions[0]?.dataset.name || null;
+        const personaId   = sel.value ? parseInt(sel.value, 10) : null;
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML += `<div class="user">Tu: ${msg}</div>`;
         document.getElementById('message-input').value = '';
@@ -103,6 +98,7 @@
             local: api,
             size,
             persona_name: personaName,
+            persona_id: personaId,
             inglese,
             rp
         };
