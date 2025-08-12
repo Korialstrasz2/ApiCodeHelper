@@ -12,7 +12,7 @@ class Persona(models.Model):
     nome = models.CharField(max_length=128)
     versione = models.CharField(max_length=32, default="1")
     contenuto = models.TextField()
-    ristretto = models.BooleanField(default=False)
+    inglese = models.BooleanField(default=False)
     esperienze = models.TextField(
         blank=True, null=True,
         help_text="Elenco (anche lungo) di avventure già vissute dal personaggio"
