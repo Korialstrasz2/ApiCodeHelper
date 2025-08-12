@@ -154,6 +154,31 @@ def _assemble_code_context(snippets: List[Dict[str, str]] | None, project_contex
         + "\nEnd of auxiliary context.\n"
     )
 
+def _resolve_persona(persona_id: int | None,
+                     persona_name: str | None,
+                     inglese: bool | None) -> tuple[int | None, "Persona | None"]:
+    """
+    Resolution priority:
+      1) exact id, if valid
+      2) latest (by versione then id) matching persona_name + inglese
+    """
+    from .models import Persona
+    if persona_id:
+        try:
+            p = Persona.objects.get(pk=persona_id)
+            return p.id, p
+        except Persona.DoesNotExist:
+            pass
+
+    if persona_name:
+        qs = Persona.objects.filter(nome=persona_name)
+        if inglese is not None:
+            qs = qs.filter(inglese=inglese)
+        p = qs.order_by("-versione", "-id").first()
+        if p:
+            return p.id, p
+
+    return None, None
 
 def _language_directive(lang: str | None) -> str:
     if not lang or lang.lower() in ("auto", "detect", "same"):
@@ -220,13 +245,16 @@ def programming_helper_send_message(request):  # noqa: C901
     project_context = data.get("project_context") or ""
 
     persona_obj = None
+    raw_id = data.get("persona_id")
+    persona_name = (data.get("persona_name") or "").strip() or None
+    inglese_flag = data.get("inglese")  # expect true/false
     try:
-        persona_id = int(data.get("persona_id", PROGRAMMING_HELPER_PERSONA_ID))
-        if persona_id != PROGRAMMING_HELPER_PERSONA_ID:
-            persona_obj = Persona.objects.get(pk=persona_id)
-    except (ValueError, Persona.DoesNotExist):
+        persona_id = int(raw_id) if raw_id is not None else None
+    except (TypeError, ValueError):
+        persona_id = None
+    persona_id, persona_obj = _resolve_persona(persona_id, persona_name, inglese_flag)
+    if persona_id is None:
         persona_id = PROGRAMMING_HELPER_PERSONA_ID
-        persona_obj = None
 
     # Conversation management (mirror your style)
     # Use your shared key function with a stable pseudo persona id + optional topic

@@ -58,6 +58,7 @@
         data.personas.forEach(p => {
             const opt = document.createElement('option');
             opt.value = p.id;
+            opt.dataset.name = p.nome;
             opt.textContent = p.nome + ' v' + p.versione;
             if (p.nome === 'AI Help') {
                 opt.selected = true;
@@ -86,16 +87,25 @@
     }
 
     async function sendMessage() {
-        const msg = document.getElementById('message-input').value;
-        const personaId = document.getElementById('persona-select').value;
-        const api = document.getElementById('api-select').value;
-        const size = document.getElementById('size-select').value;
-        const rp = document.getElementById('rp-checkbox').checked;
+        const msg   = document.getElementById('message-input').value;
+        const sel   = document.getElementById('persona-select');
+        const api   = document.getElementById('api-select').value;
+        const size  = document.getElementById('size-select').value;
+        const rp    = document.getElementById('rp-checkbox').checked;
+        const inglese = document.getElementById('english-checkbox').checked;
         if (!msg) return;
+        const personaName = sel.selectedOptions[0]?.dataset.name || null;
         const chatBox = document.getElementById('chat-box');
         chatBox.innerHTML += `<div class="user">Tu: ${msg}</div>`;
         document.getElementById('message-input').value = '';
-        const payload = { message: msg, local: api, size: size, persona_id: personaId, rp: rp };
+        const payload = {
+            message: msg,
+            local: api,
+            size,
+            persona_name: personaName,
+            inglese,
+            rp
+        };
         const res = await fetch('/api/programming_helper/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
