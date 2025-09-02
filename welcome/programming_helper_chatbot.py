@@ -33,6 +33,9 @@ PROGRAMMING_HELPER_PERSONA_ID = -42042
 
 CONTEXT_STANDARD = 2500
 CONTEXT_ASSISTANT = 10000
+TOKEN_TARGET_UNLOCK = 200_000
+CHARS_PER_TOKEN = 4
+LARGE_CHAR_BUDGET = TOKEN_TARGET_UNLOCK * CHARS_PER_TOKEN
 
 # Ollama
 OLLAMA_QWEN_BASE = "qwen3:8b"
@@ -234,6 +237,7 @@ def programming_helper_send_message(request):  # noqa: C901
     size = (data.get("size") or "m").strip().lower()
     verbosity = (data.get("verbosity") or DEFAULT_VERBOSITY).lower()
     rp = bool(data.get("rp", False))
+    unlock = bool(data.get("unlock") or data.get("unlock_context"))
     if verbosity not in VERBOSITY_VALUES:
         verbosity = DEFAULT_VERBOSITY
 
@@ -282,7 +286,7 @@ def programming_helper_send_message(request):  # noqa: C901
 
     # Build system content (base + language directive + optional code context)
     lang_rule = _language_directive(lang)
-    code_block = _assemble_code_context(snippets, project_context)
+    code_block = _assemble_code_context(snippets, project_context,max_chars=(LARGE_CHAR_BUDGET if unlock else 12000),)
     if persona_obj:
         system_base = persona_obj.contenuto
         if persona_obj.esperienze:
@@ -292,7 +296,7 @@ def programming_helper_send_message(request):  # noqa: C901
     rp_block = (_rp_system_prompt() + "\n\n") if rp else ""
     combined_system = f"{rp_block}{system_base}\n\n{lang_rule}\n\n{code_block}".strip()
     # Provider calls
-    context_limit = CONTEXT_ASSISTANT
+    context_limit = TOKEN_TARGET_UNLOCK if unlock else CONTEXT_ASSISTANT
     reply: str = ""
 
     if local == "ollama":
@@ -314,7 +318,7 @@ def programming_helper_send_message(request):  # noqa: C901
         }
         print(f"Model in use: {model}")
         try:
-            resp = requests.post("http://localhost:11434/api/generate", json=payload, timeout=45)
+            resp = requests.post("http://localhost:11434/api/generate", json=payload, timeout=120)
             resp.raise_for_status()
             reply = resp.json().get("response", "")
         except Exception as exc:
@@ -347,7 +351,7 @@ def programming_helper_send_message(request):  # noqa: C901
             "max_tokens": context_limit,
         }
         try:
-            resp = requests.post(MISTRAL_API_URL, json=payload, headers=headers, timeout=45)
+            resp = requests.post(MISTRAL_API_URL, json=payload, headers=headers, timeout=55)
             resp.raise_for_status()
             reply = resp.json()["choices"][0]["message"]["content"]
         except Exception as exc:
@@ -411,7 +415,7 @@ def programming_helper_send_message(request):  # noqa: C901
             "Content-Type": "application/json",
         }
         try:
-            resp = requests.post(OPENROUTER_BASE_URL, json=body, headers=headers, timeout=45)
+            resp = requests.post(OPENROUTER_BASE_URL, json=body, headers=headers, timeout=120)
             resp.raise_for_status()
             data = resp.json()
             reply = data["choices"][0]["message"]["content"]

@@ -20,6 +20,9 @@
         <label><input type="checkbox" id="rp-checkbox" />RP</label>
     </div>
     <div>
+        <label><input type="checkbox" id="unlock-checkbox" />Unlock context (~200k tokens)</label>
+    </div>
+    <div>
         <label><input type="checkbox" id="english-checkbox" />English</label>
     </div>
     <div id="persona-error" style="color: red;"></div>
@@ -87,6 +90,7 @@
         const size  = document.getElementById('size-select').value;
         const rp    = document.getElementById('rp-checkbox').checked;
         const inglese = document.getElementById('english-checkbox').checked;
+        const unlock = document.getElementById('unlock-checkbox').checked;
         if (!msg) return;
         const personaName = sel.selectedOptions[0]?.dataset.name || null;
         const personaId   = sel.value ? parseInt(sel.value, 10) : null;
@@ -100,7 +104,8 @@
             persona_name: personaName,
             persona_id: personaId,
             inglese,
-            rp
+            rp,
+            unlock
         };
         const res = await fetch('/api/programming_helper/', {
             method: 'POST',
